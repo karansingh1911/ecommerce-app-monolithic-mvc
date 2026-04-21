@@ -7,6 +7,9 @@ import com.karan.ecommerce_app.dto.user.UserDTO;
 import com.karan.ecommerce_app.model.User;
 import com.karan.ecommerce_app.repository.UserRepository;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.cache.annotation.CacheEvict;
+import org.springframework.cache.annotation.Cacheable;
+import org.springframework.cache.annotation.Caching;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -21,22 +24,28 @@ public class UserService {
     UserRepository userRepo;
     private BCryptPasswordEncoder encoder = new BCryptPasswordEncoder(12);
 
-
+    @Cacheable(value = "userList", key="'all'")
     @Transactional(readOnly = true)
-    public List<UserDTO> getllUsers() {
+    public List<UserDTO> getAllUsers() {
         List<UserDTO> userDTOList = userRepo.findAll().stream().map(user -> {
             return UserDTO.builder().firstName(user.getFirstName()).lastName(user.getLastName()).email(user.getEmail()).phoneNumber(user.getPhoneNumber()).role(user.getRole()).build();
         }).toList();
         return userDTOList;
     }
 
-
+    @Caching(evict = {
+            @CacheEvict(value = "userById", key = "#userId"),
+            @CacheEvict(value = "userByEmail", allEntries = true),
+            @CacheEvict(value = "userList", allEntries = true),
+            @CacheEvict(value = "userImages", key = "#userId")
+    })
     @Transactional
     public String deleteUserById(long userId) {
         userRepo.deleteById(userId);
         return ("User has been deleted" + userId);
     }
 
+    @Cacheable(value = "userByEmail", key="#email.toLowerCase()")
     @Transactional(readOnly = true)
     public UserDTO getUserByEmail(String email) {
 
@@ -45,7 +54,7 @@ public class UserService {
         return UserDTO.builder().firstName(user.getFirstName()).lastName(user.getLastName()).email(user.getEmail()).phoneNumber(user.getPhoneNumber()).role(user.getRole()).build();
     }
 
-
+    @Cacheable(value = "userById", key="#userId")
     @Transactional(readOnly = true)
     public UserDTO getUserById(long userId) {
         User user = userRepo.findById(userId).orElseThrow(() -> new RuntimeException("User not found"));
@@ -54,7 +63,7 @@ public class UserService {
 
     }
 
-
+    @CacheEvict(value = "userImages", key = "#id")
     @Transactional
     public String uploadProfileImage(long id, MultipartFile image) {
 
@@ -69,8 +78,17 @@ public class UserService {
         return "Profile updated successfully";
 
     }
-
-
+    //when the user is deleted with certain email then all users must update, userByEmail should update just by that single
+    // record and so should happen with the userById with just userId, further the userList should be updated and Image should
+    // only be removed/updated from the certain key with user::id
+    //NOTE: Nuking every namespace isn't required for it, just a record in the namespace should be affected in some places and
+    // the list
+    @Caching(evict = {
+            @CacheEvict(value = "userByEmail", key = "#email.toLowerCase()"),
+            @CacheEvict(value = "userById", allEntries = true),
+            @CacheEvict(value = "userList", allEntries = true),
+            @CacheEvict(value = "userImages", allEntries = true)
+    })
     @Transactional
     public String deleteUserByEmail(String email) {
         User user = userRepo.findByEmail(email).orElseThrow(() -> new RuntimeException("User not found with the id: " + email));
@@ -79,7 +97,7 @@ public class UserService {
 
     }
 
-
+    @Cacheable(value = "userImages",key = "#userId")
     @Transactional(readOnly = true)
     public byte[] getUserImageById(Long userId) {
         User user = userRepo.findById(userId).orElseThrow(() -> new RuntimeException("User not found with the email: " + userId));
@@ -92,7 +110,11 @@ public class UserService {
 
     }
 
-
+    @Caching(evict = {
+            @CacheEvict(value = "userById", key = "#userId"),
+            @CacheEvict(value = "userByEmail", allEntries = true),
+            @CacheEvict(value = "userList", allEntries = true)
+    })
     @Transactional
     public UpdateUserResponseDTO updateUserByUserId(long userId, UpdateUserRequestDTO updateUserRequestDTO) {
         User user = userRepo.findById(userId).orElseThrow(() -> new RuntimeException("User not found with id: " + userId));

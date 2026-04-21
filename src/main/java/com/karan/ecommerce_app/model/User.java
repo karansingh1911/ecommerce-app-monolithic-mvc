@@ -1,5 +1,7 @@
 package com.karan.ecommerce_app.model;
 
+import com.fasterxml.jackson.annotation.JsonFormat;
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.karan.ecommerce_app.enums.Role;
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
@@ -39,9 +41,11 @@ public class User {
     private Role role;
 
     @Column(nullable = false, updatable = false)
+    @JsonFormat(shape=JsonFormat.Shape.STRING, pattern="dd-MM-yyyy HH:mm:ss")
     private LocalDateTime createdAt;
 
     @Column(nullable = false)
+    @JsonFormat(shape=JsonFormat.Shape.STRING, pattern="dd-MM-yyyy HH:mm:ss")
     private LocalDateTime updatedAt;
 
     @Column(nullable = false)
@@ -49,6 +53,7 @@ public class User {
 
     @Lob
     @Basic(fetch=FetchType.LAZY)
+    @JsonIgnore
     private byte[] profileImage;
 
     private String imageType;

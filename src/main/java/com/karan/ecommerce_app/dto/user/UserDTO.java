@@ -1,12 +1,9 @@
 package com.karan.ecommerce_app.dto.user;
 
 import com.karan.ecommerce_app.enums.Role;
-import lombok.AllArgsConstructor;
-import lombok.Builder;
-import lombok.Data;
-import lombok.NoArgsConstructor;
+import lombok.*;
 
-@Data
+@Getter
 @Builder
 @NoArgsConstructor
 @AllArgsConstructor

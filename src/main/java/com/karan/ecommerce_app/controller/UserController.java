@@ -26,7 +26,7 @@ public class UserController {
 
     @GetMapping
     public ResponseEntity<List<UserDTO>> getAllUsers() {
-        return new ResponseEntity<>(userService.getllUsers(), HttpStatus.OK);
+        return new ResponseEntity<>(userService.getAllUsers(), HttpStatus.OK);
     }
 
     @GetMapping("{userId}")
@@ -51,13 +51,13 @@ public class UserController {
 
 
     @PutMapping("/{id}/profile-image")
-    public ResponseEntity<String> uploadProfileImage(@PathVariable int id, @RequestParam MultipartFile image) {
+    public ResponseEntity<String> uploadProfileImage(@PathVariable Long id, @RequestParam MultipartFile image) {
         return new ResponseEntity<>(userService.uploadProfileImage(id, image), HttpStatus.OK);
     }
 
 
     @DeleteMapping("/{userID}")
-    public ResponseEntity<String> deleteUserById(@PathVariable int userId) {
+    public ResponseEntity<String> deleteUserById(@PathVariable Long userId) {
         return new ResponseEntity<>(userService.deleteUserById(userId), HttpStatus.NO_CONTENT);
     }
 

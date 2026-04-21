@@ -8,6 +8,7 @@ import com.karan.ecommerce_app.model.User;
 import com.karan.ecommerce_app.service.AuthenticationService;
 import com.karan.ecommerce_app.service.JwtService;
 import com.karan.ecommerce_app.service.UserService;
+import jakarta.validation.Valid;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -29,13 +30,13 @@ public class AuthenticationController {
     UserService userService;
 
     @PostMapping("/register")
-    public ResponseEntity<?> registerUser(@RequestPart("createUserRequest") CreateUserRequest createUserRequest) {
+    public ResponseEntity<?> registerUser(@Valid @RequestPart("createUserRequest") CreateUserRequest createUserRequest) {
         return new ResponseEntity<>(authService.register(createUserRequest), HttpStatus.CREATED);
     }
 
 
     @PostMapping("/login")
-    public ResponseEntity<String> login(@RequestBody AuthRequest authRequest) {
+    public ResponseEntity<String> login(@Valid @RequestBody AuthRequest authRequest) {
         // throws badCredentials error if user credentials not found inside the DB by the
         Authentication authentication =
                 authenticationManager.authenticate(new UsernamePasswordAuthenticationToken(authRequest.getEmail(), authRequest.getPassword()));
