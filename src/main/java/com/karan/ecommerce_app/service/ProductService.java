@@ -5,11 +5,11 @@ import com.karan.ecommerce_app.model.Product;
 import com.karan.ecommerce_app.repository.ProductRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.cache.annotation.CacheEvict;
-import org.springframework.cache.annotation.CachePut;
 import org.springframework.cache.annotation.Cacheable;
 import org.springframework.cache.annotation.Caching;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
@@ -36,15 +36,19 @@ public class ProductService {
     //}
     @Cacheable(value = "productById", key = "#productId")
     @Transactional(readOnly = true)
+    @PreAuthorize("hasRole('ADMIN')")
     public ProductResponseDTO getProductById(Long productId) {
         Product product = productRepository.findById(productId).orElseThrow(() -> new RuntimeException("Resource not found..."));
 
         return ProductResponseDTO.builder().productId(product.getProductId()).productName(product.getProductName()).productCategory(product.getProductCategory()).productDescription(product.getProductDescription()).price(product.getPrice()).isAvailable(product.isAvailable()).build();
     }
+
     @Caching(evict = {
             @CacheEvict(value = "productById",key = "#productId"),
             @CacheEvict(value = "productSearch", allEntries = true)
     })
+    @Transactional
+    @PreAuthorize("hasRole('ADMIN')")
     public void deleteProductById(long productId) {
         // if record doesn't exist in DB then throw error!
         if (!productRepository.existsById(productId)) {
@@ -57,6 +61,7 @@ public class ProductService {
             @CacheEvict(value = "productSearch", allEntries = true)
     })
     @Transactional
+    @PreAuthorize("hasRole('ADMIN')")
     public ProductResponseDTO updateProduct(Long productId, ProductUpdateRequestDTO requestDTO) {
         Product product = productRepository.findById(productId).orElseThrow(() -> new RuntimeException("Product not found"));
 
@@ -86,6 +91,7 @@ public class ProductService {
     }
     @CacheEvict(value = "productImageById",key = "#productId")
     @Transactional
+    @PreAuthorize("hasRole('ADMIN')")
     public void updateImageByProductId(long productId, MultipartFile image) {
         Product product = productRepository.findById(productId).orElseThrow(() -> new RuntimeException("Product not found."));
         if (image.isEmpty()) {
@@ -125,7 +131,8 @@ public class ProductService {
         // pass a safer string for the query that would be better
         Page<Product> pageResult = productRepository.findByProductNameContainingIgnoreCaseOrProductDescriptionContainingIgnoreCaseOrProductBrandContainingIgnoreCase(safequery, safequery, safequery, pageable);
         // get all the list of products so that it can be set inside the paginatedProductResponse
-        List<ProductResponseDTO> products = pageResult.getContent().stream().map(p -> ProductResponseDTO.builder().productId(p.getProductId()).productName(p.getProductName()).price(p.getPrice()).productDescription(p.getProductDescription()).productCategory(p.getProductCategory()).productBrand(p.getProductBrand()).isAvailable(p.isAvailable()).build()).toList();
+        List<ProductResponseDTO> products =
+                pageResult.getContent().stream().map(p -> ProductResponseDTO.builder().productId(p.getProductId()).productName(p.getProductName()).price(p.getPrice()).productDescription(p.getProductDescription()).productCategory(p.getProductCategory()).productBrand(p.getProductBrand()).isAvailable(p.isAvailable()).build()).toList();
         // putting all the products inside the paginatedProductList
         return PaginatedResponseDTO.builder().products(products).page(pageResult.getNumber()).size(pageResult.getSize()).totalItems(pageResult.getTotalElements()).totalPages(pageResult.getTotalPages()).hasNext(pageResult.hasNext()).build();
 
@@ -133,6 +140,7 @@ public class ProductService {
 
     @CacheEvict(value = "productSearch", allEntries = true)
     @Transactional
+    @PreAuthorize("hasRole('ADMIN')")
     public PostProductResponseDTO createProduct(PostProductRequestDTO postProductRequestDTO) {
         Product product = new Product();
         product.setProductName(postProductRequestDTO.getProductName());

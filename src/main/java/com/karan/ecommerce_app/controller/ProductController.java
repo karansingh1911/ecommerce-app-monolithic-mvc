@@ -4,6 +4,8 @@ import com.karan.ecommerce_app.config.PaginationProperties;
 import com.karan.ecommerce_app.dto.product.*;
 import com.karan.ecommerce_app.service.ProductService;
 import jakarta.validation.Valid;
+import jakarta.validation.constraints.Positive;
+import jakarta.validation.constraints.PositiveOrZero;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
@@ -11,13 +13,13 @@ import org.springframework.data.domain.Sort;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
+import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 
-
-import java.util.List;
-
 @RestController
+@Validated
 @RequestMapping("/products")
 public class ProductController {
     @Autowired
@@ -33,13 +35,13 @@ public class ProductController {
     //}
 
     @GetMapping("/{productId}")
-    public ResponseEntity<ProductResponseDTO> getProductById(@PathVariable Long productId) {
+    public ResponseEntity<ProductResponseDTO> getProductById(@Positive @PathVariable Long productId) {
 
         return new ResponseEntity<>(productService.getProductById(productId), HttpStatus.OK);
     }
 
     @GetMapping("/{productId}/image")
-    public ResponseEntity<byte[]> getImageByProductId(@PathVariable long productId) {
+    public ResponseEntity<byte[]> getImageByProductId(@Positive @PathVariable long productId) {
 
         ProductImageResponseDTO imageDTO = productService.getImageById(productId);
         MediaType mediaType = MediaType.APPLICATION_OCTET_STREAM; // to create a default fallback - either browser download the
@@ -57,11 +59,13 @@ public class ProductController {
         return ResponseEntity.ok().contentType(mediaType).body(imageDTO.getProductImage());
     }
 
+
     @DeleteMapping("/{productId}")
-    public ResponseEntity<Void> deleteProductById(@PathVariable long productId) {
+    public ResponseEntity<Void> deleteProductById(@Positive @PathVariable long productId) {
         productService.deleteProductById(productId);
         return new ResponseEntity<>(HttpStatus.NO_CONTENT);
     }
+
 
     @PostMapping
     public ResponseEntity<PostProductResponseDTO> createProduct(@Valid @RequestBody PostProductRequestDTO postProductRequestDTO) {
@@ -69,13 +73,16 @@ public class ProductController {
 
     }
 
+
     @PatchMapping("/{productId}")
-    public ResponseEntity<ProductResponseDTO> updateProductById(@PathVariable Long productId, @Valid @RequestBody ProductUpdateRequestDTO productUpdateRequestDTO) {
+    public ResponseEntity<ProductResponseDTO> updateProductById(@Positive @PathVariable Long productId,
+                                                                @Valid @RequestBody ProductUpdateRequestDTO productUpdateRequestDTO) {
         return new ResponseEntity<>(productService.updateProduct(productId, productUpdateRequestDTO), HttpStatus.OK);
     }
 
+
     @PutMapping("/{productId}/image")
-    public ResponseEntity<Void> updateImageByProductId(@PathVariable Long productId, @RequestParam("image") MultipartFile image) {
+    public ResponseEntity<Void> updateImageByProductId(@Positive @PathVariable Long productId, @RequestParam("image") MultipartFile image) {
         productService.updateImageByProductId(productId, image);
         return ResponseEntity.noContent().build();
     }
@@ -85,8 +92,8 @@ public class ProductController {
     // GET /products/search?pageNumber=0&pageSize=10
     @GetMapping("/search")
     public ResponseEntity<PaginatedResponseDTO> searchProducts(@RequestParam(required = false) String query,
-                                                               @RequestParam(required = false) Integer pageNumber,
-                                                               @RequestParam(required = false) Integer pageSize,
+                                                               @PositiveOrZero @RequestParam(required = false) Integer pageNumber,
+                                                               @Positive @RequestParam(required = false) Integer pageSize,
                                                                @RequestParam(defaultValue = "productId") String sortBy,
                                                                @RequestParam(defaultValue = "asc") String sortDir) {
 

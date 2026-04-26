@@ -17,6 +17,10 @@ public class CustomUserDetails implements UserDetails {
         this.user = user;
     }
 
+    public Long getUserId() {
+        return user.getUserId();
+    }
+
     @NonNull
     @Override
     public Collection<? extends GrantedAuthority> getAuthorities() {
@@ -52,6 +56,8 @@ public class CustomUserDetails implements UserDetails {
 
     @Override
     public boolean isEnabled() { // user cannot authenticate if isEnabled - false
-        return true;
+        return user.getIsActive();
     }
+
+
 }

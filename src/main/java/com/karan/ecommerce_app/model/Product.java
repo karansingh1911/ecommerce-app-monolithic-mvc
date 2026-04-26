@@ -13,15 +13,16 @@ import java.math.BigDecimal;
 import java.time.LocalDateTime;
 
 
-@Data
+
 @NoArgsConstructor
 @AllArgsConstructor
 @Entity
+@Data
 @Table(name = "product")
 public class Product {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private long productId;
+    private Long productId;
 
     @Column(nullable = false)
     private String productName;
