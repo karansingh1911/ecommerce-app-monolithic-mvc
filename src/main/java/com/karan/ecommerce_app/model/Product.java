@@ -61,6 +61,11 @@ public class Product {
     @Column(nullable = true)
     private byte[] productImage;
 
+
+    @Version //Optimistic locking(offers better scalability): for concurrency and to prevent race condition!
+    private Long version;
+
+
     public boolean isAvailable() {
         return stockQuantity != null && stockQuantity > 0;
     }

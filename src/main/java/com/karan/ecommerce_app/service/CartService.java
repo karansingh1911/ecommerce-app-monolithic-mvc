@@ -7,8 +7,7 @@ import com.karan.ecommerce_app.model.CartItem;
 import com.karan.ecommerce_app.model.Product;
 import com.karan.ecommerce_app.repository.CartRepository;
 import com.karan.ecommerce_app.repository.ProductRepository;
-import jakarta.validation.constraints.Positive;
-import jakarta.validation.constraints.PositiveOrZero;
+
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.cache.annotation.CacheEvict;
 import org.springframework.cache.annotation.Cacheable;
@@ -46,7 +45,7 @@ public class CartService {
 
 
         // getting the cart for current user - no checks needed!
-        Cart cart = cartRepository.findByUser_Id(userId).orElseThrow(() -> new RuntimeException("Resource not found."));
+        Cart cart = cartRepository.findByUser_UserId(userId).orElseThrow(() -> new RuntimeException("Resource not found."));
 
         // checking if there is any cartItem with the products or not
         Optional<CartItem> cartItemIfExists = cart.getCartItemsList().stream().filter((cartItem) -> {
@@ -82,7 +81,7 @@ public class CartService {
     @CacheEvict(value = "cartByUserId", key = "#userId")
     public void clearCart(Long userId) {
         // cart shouldn't be deleted rather cartItems should be cleared.
-        Cart cart = cartRepository.findByUser_Id(userId).orElseThrow(() -> new RuntimeException("Resource not found."));
+        Cart cart = cartRepository.findByUser_UserId(userId).orElseThrow(() -> new RuntimeException("Resource not found."));
 
         cart.getCartItemsList().clear();
 
@@ -94,7 +93,7 @@ public class CartService {
     public void deleteCartItem(Long cartItemId, Long userId) {
 
         //got the cart for the user
-        Cart cart = cartRepository.findByUser_Id(userId).orElseThrow(() -> new RuntimeException("Resource not found."));
+        Cart cart = cartRepository.findByUser_UserId(userId).orElseThrow(() -> new RuntimeException("Resource not found."));
         CartItem itemToRemove = cart.getCartItemsList().stream().filter(item -> item.getCartItemId().equals(cartItemId)).findFirst().orElseThrow(() -> new RuntimeException("Cart item not found"));
         cart.removeItem(itemToRemove);
         cartRepository.save(cart);
@@ -104,7 +103,7 @@ public class CartService {
     @CacheEvict(value = "cartByUserId", key = "#userId")
     public CartResponseDTO updateQuantityByCartItemId(Long cartItemId, Integer quantity, Long userId) {
         //get the cart for the user
-        Cart cart = cartRepository.findByUser_Id(userId).orElseThrow(() -> new RuntimeException("Resource not found."));
+        Cart cart = cartRepository.findByUser_UserId(userId).orElseThrow(() -> new RuntimeException("Resource not found."));
 
         // find the cartItem with the index to be updated by quantity
         CartItem itemToBeUpdated = cart.getCartItemsList().stream().filter(item -> item.getCartItemId().equals(cartItemId)).findFirst().orElseThrow(() -> new RuntimeException("Resource not found "));

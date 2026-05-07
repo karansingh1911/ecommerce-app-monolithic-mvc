@@ -33,6 +33,10 @@ public class RedisConfig {
         cacheConfigs.put("productImageById", defaultConfig.entryTtl(Duration.ofDays(1)));
         //NOTE: since freshness is protected by Eviction, we can go for longer TTL even when user changes the cart frequently!l
         cacheConfigs.put("cartByUserId", defaultConfig.entryTtl(Duration.ofMinutes(5)));
+        // ttl config for the order related namespaces
+        cacheConfigs.put("orderPage", defaultConfig.entryTtl(Duration.ofMinutes(3))); // because of frequent orders by the users
+        cacheConfigs.put("orderById", defaultConfig.entryTtl(Duration.ofDays(2)));
+        cacheConfigs.put("ordersByUser", defaultConfig.entryTtl(Duration.ofDays(1)));
         return RedisCacheManager.builder(factory).cacheDefaults(defaultConfig).withInitialCacheConfigurations(cacheConfigs).build();
 
 

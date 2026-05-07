@@ -13,9 +13,10 @@ import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 
-@RequestMapping("myCart")
+
 @RestController
 @Validated
+@RequestMapping("cart/me")
 public class CartController {
 
     @Autowired
@@ -25,6 +26,11 @@ public class CartController {
     public ResponseEntity<CartResponseDTO> getCart(@AuthenticationPrincipal CustomUserDetails user) { //cart owns the
         // relationship and holds
         // user_id column
+        return new ResponseEntity<>(cartService.getCart(user.getUserId()), HttpStatus.OK);
+    }
+
+    public ResponseEntity<CartResponseDTO> getMyCart(@AuthenticationPrincipal CustomUserDetails user) {
+
         return new ResponseEntity<>(cartService.getCart(user.getUserId()), HttpStatus.OK);
     }
 
